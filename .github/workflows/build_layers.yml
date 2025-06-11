@@ -11,33 +11,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build pyarrow layer
+      - name: Build pyarrow
         run: |
           docker build -t pyarrow-layer -f Dockerfile.pyarrow .
           id=$(docker create pyarrow-layer)
           docker cp $id:/pyarrow-layer.zip pyarrow-layer.zip
           docker rm $id
-
       - uses: actions/upload-artifact@v4
         with:
           name: pyarrow-layer
           path: pyarrow-layer.zip
 
-  build-utils:
-    name: Build Utils Layer
+  build-protobuf:
+    name: Build Protobuf Layer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build utils layer
+      - name: Build protobuf
         run: |
-          docker build -t utils-layer -f Dockerfile.utils .
-          id=$(docker create utils-layer)
-          docker cp $id:/utils-layer.zip utils-layer.zip
+          docker build -t protobuf-layer -f Dockerfile.protobuf .
+          id=$(docker create protobuf-layer)
+          docker cp $id:/protobuf-layer.zip protobuf-layer.zip
           docker rm $id
-
       - uses: actions/upload-artifact@v4
         with:
-          name: utils-layer
-          path: utils-layer.zip
+          name: protobuf-layer
+          path: protobuf-layer.zip
+
+  build-pandas:
+    name: Build Pandas Layer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build pandas
+        run: |
+          docker build -t pandas-layer -f Dockerfile.pandas .
+          id=$(docker create pandas-layer)
+          docker cp $id:/pandas-layer.zip pandas-layer.zip
+          docker rm $id
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pandas-layer
+          path: pandas-layer.zip
