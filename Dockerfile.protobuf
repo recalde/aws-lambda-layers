@@ -1,24 +1,20 @@
 FROM amazonlinux:2023
 
-RUN dnf install -y python3 python3-pip unzip zip
+RUN dnf install -y python3 python3-pip unzip zip && \
+    python3 -m pip install --upgrade pip setuptools wheel
 
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
+# Install required packages in the correct order
 RUN python3 -m pip install \
     protobuf \
-    google \
     googleapis-common-protos \
+    google \
     -t python/lib/python${PYTHON_VERSION}/site-packages
 
-# 🔧 Fix: convert google namespace package to regular package
+# Fix the namespace: Lambda needs a physical __init__.py
 RUN touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
 
-# Optional: Cleanup
-RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/google/cloud \
-           python/lib/python${PYTHON_VERSION}/site-packages/google/api_core \
-           python/lib/python${PYTHON_VERSION}/site-packages/__pycache__ \
-           python/lib/python${PYTHON_VERSION}/site-packages/*dist-info \
-           python/lib/python${PYTHON_VERSION}/site-packages/*.egg-info || true
-
+# Create the layer zip file
 RUN cd python && zip -r9 /protobuf-layer.zip .
