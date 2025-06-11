@@ -2,11 +2,12 @@
 
 FROM amazonlinux:2023
 
-# --- Install system dependencies (excluding python3-pip to avoid rpm conflict) ---
-RUN dnf install -y gcc-c++ cmake make python3-devel unzip zip curl ca-certificates && \
-    update-ca-trust
+# --- Install system dependencies with --allowerasing ---
+RUN dnf install -y --allowerasing gcc-c++ cmake make python3-devel unzip zip curl ca-certificates && \
+    update-ca-trust && \
+    dnf clean all
 
-# --- Install pip cleanly from source to avoid RPM-managed conflicts ---
+# --- Install pip safely from source to avoid RPM conflicts ---
 RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py
@@ -14,22 +15,22 @@ RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py && \
 # --- Upgrade setuptools and wheel ---
 RUN pip install --upgrade setuptools wheel
 
-# --- Define Python version for directory layout ---
+# --- Lambda-compatible pyarrow layer ---
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
-# --- Install pyarrow to Lambda-compatible path ---
+# Install pyarrow into Python site-packages folder structure
 RUN pip install pyarrow -t python/lib/python${PYTHON_VERSION}/site-packages
 
-# --- Strip shared libraries to reduce ZIP size ---
+# Strip shared object files to reduce size
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/pyarrow -name "*.so" -exec strip --strip-unneeded {} \; || true
 
-# --- Clean up unnecessary files to reduce ZIP size ---
+# Clean unnecessary files
 RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/tests \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/include \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/*.pyd \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/*.cmake \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/__pycache__
 
-# --- Create the Lambda layer ZIP ---
+# Create ZIP for Lambda layer
 RUN cd python && zip -r9 /pyarrow-layer.zip .
