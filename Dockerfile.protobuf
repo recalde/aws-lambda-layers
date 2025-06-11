@@ -1,24 +1,24 @@
 FROM amazonlinux:2023
 
-# Install Python and tools (no pip upgrade!)
 RUN dnf install -y python3 python3-pip unzip zip
 
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
-# Install only protobuf-related packages needed by pyarrow
 RUN python3 -m pip install \
     protobuf \
     google \
     googleapis-common-protos \
     -t python/lib/python${PYTHON_VERSION}/site-packages
 
-# Optional: Remove unused pieces to reduce size
+# 🔧 Fix: convert google namespace package to regular package
+RUN touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
+
+# Optional: Cleanup
 RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/google/cloud \
            python/lib/python${PYTHON_VERSION}/site-packages/google/api_core \
            python/lib/python${PYTHON_VERSION}/site-packages/__pycache__ \
            python/lib/python${PYTHON_VERSION}/site-packages/*dist-info \
            python/lib/python${PYTHON_VERSION}/site-packages/*.egg-info || true
 
-# Zip into Lambda layer structure
 RUN cd python && zip -r9 /protobuf-layer.zip .
