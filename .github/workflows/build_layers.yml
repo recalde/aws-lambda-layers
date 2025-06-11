@@ -1,0 +1,43 @@
+name: Build Lambda Layers
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-pyarrow:
+    name: Build PyArrow Layer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build pyarrow layer
+        run: |
+          docker build -t pyarrow-layer -f Dockerfile.pyarrow .
+          id=$(docker create pyarrow-layer)
+          docker cp $id:/pyarrow-layer.zip pyarrow-layer.zip
+          docker rm $id
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pyarrow-layer
+          path: pyarrow-layer.zip
+
+  build-utils:
+    name: Build Utils Layer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build utils layer
+        run: |
+          docker build -t utils-layer -f Dockerfile.utils .
+          id=$(docker create utils-layer)
+          docker cp $id:/utils-layer.zip utils-layer.zip
+          docker rm $id
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: utils-layer
+          path: utils-layer.zip

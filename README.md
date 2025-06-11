@@ -1,19 +1,25 @@
-# PyArrow Lambda Layer
+# AWS Lambda Layers: PyArrow & Utility Layer
 
-This repo builds an AWS Lambda Layer with `pyarrow` using GitHub Actions and Docker.
+This repo builds two AWS Lambda Layers using GitHub Actions:
 
-## 📦 Usage
+1. `pyarrow-layer.zip`: Contains `pyarrow`
+2. `utils-layer.zip`: Contains `boto3`, `protobuf`, and `pandas`
 
-- Clone the repo and push to GitHub
+## 🛠 Usage
+
 - Go to the **Actions tab**
-- Run the `Build PyArrow Lambda Layer` workflow
-- After completion, download `pyarrow-layer.zip` from the workflow artifacts
+- Run the **Build Lambda Layers** workflow
+- Download artifacts: `pyarrow-layer.zip` and `utils-layer.zip`
 
-## 🚀 Deploy to AWS Lambda
+## 🚀 Deploy Example
 
 ```bash
 aws lambda publish-layer-version \
   --layer-name pyarrow \
   --zip-file fileb://pyarrow-layer.zip \
   --compatible-runtimes python3.11
-```
+
+aws lambda publish-layer-version \
+  --layer-name lambda-utils \
+  --zip-file fileb://utils-layer.zip \
+  --compatible-runtimes python3.11
