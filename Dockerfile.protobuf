@@ -1,23 +1,24 @@
 FROM amazonlinux:2023
 
-RUN dnf install -y --allowerasing gcc-c++ make python3-devel unzip zip curl ca-certificates && \
-    update-ca-trust && \
-    dnf clean all
-
-RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py && \
-    python3 get-pip.py && \
-    rm get-pip.py
-
-RUN pip install --upgrade setuptools wheel
+RUN dnf install -y python3 python3-pip unzip zip && \
+    python3 -m pip install --upgrade pip
 
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
-RUN pip install --no-cache-dir protobuf -t python/lib/python${PYTHON_VERSION}/site-packages
+# Install only the packages needed for pyarrow compatibility with google/protobuf
+RUN python3 -m pip install \
+    protobuf \
+    google \
+    googleapis-common-protos \
+    -t python/lib/python${PYTHON_VERSION}/site-packages
 
-RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} \; || true
+# Clean up unnecessary pieces
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/google/cloud \
+           python/lib/python${PYTHON_VERSION}/site-packages/google/api_core \
+           python/lib/python${PYTHON_VERSION}/site-packages/__pycache__ \
+           python/lib/python${PYTHON_VERSION}/site-packages/*dist-info \
+           python/lib/python${PYTHON_VERSION}/site-packages/*.egg-info || true
 
-RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/tests \
-           python/lib/python${PYTHON_VERSION}/site-packages/**/__pycache__
-
+# Build ZIP file
 RUN cd python && zip -r9 /protobuf-layer.zip .
