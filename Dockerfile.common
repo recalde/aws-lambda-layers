@@ -169,6 +169,18 @@ RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -type f \( -name "*.d
 # Strip shared object files to reduce size
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} + || true
 
+# Remove additional rarely used numpy and pandas files
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -type f \( -name "*.pyo" -o -name "*.pyc" -o -name "*.pyx" -o -name "*.pxd" -o -name "*.pxi" -o -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -delete
+
+# Remove numpy/f2py (Fortran-Python interface, not needed for parquet)
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/numpy/f2py*
+
+# Remove numpy/distutils (build utilities, not needed at runtime)
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/numpy/distutils*
+
+# Remove pandas/io/parquet/engine.pyx and cythonized sources (not needed at runtime)
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/parquet/ -type f \( -name "*.pyx" -o -name "*.c" -o -name "*.cpp" \) -delete || true
+
 # Print uncompressed size of the layer
 RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
 
