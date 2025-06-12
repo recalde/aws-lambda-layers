@@ -33,6 +33,10 @@ RUN mkdir -p python \
 # Ensure google/__init__.py exists for Lambda compatibility (for protobuf layer)
 RUN mkdir -p python/google && touch python/google/__init__.py
 
+# Copy and run trim.sh to reduce layer size
+COPY trim.sh ./trim.sh
+RUN chmod +x ./trim.sh && ./trim.sh python
+
 # Print uncompressed size of the layer
 RUN du -sh python
 
