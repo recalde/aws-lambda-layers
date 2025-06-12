@@ -159,6 +159,9 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pytz* \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_fs* \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_acero*
 
+# Remove large numpy BLAS/LAPACK shared libraries not needed for basic parquet writing
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "libscipy_openblas64_*.so" -delete
+
 # Strip shared object files to reduce size
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} + || true
 
