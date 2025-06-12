@@ -1,30 +1,43 @@
-# Builds a Lambda-compatible layer from a passed-in requirements file
-FROM public.ecr.aws/lambda/python:3.12 as builder
+# Dockerfile
+# Debian-based Lambda layer builder with lambda-trim
+# Compatible with AWS Lambda Python 3.12
 
-# Inputs (from build args)
+FROM python:3.12-slim as builder
+
 ARG REQUIREMENTS=requirements.txt
+ENV LAYER_DIR=/opt/layer
+ENV PYTHON_VERSION=3.12
 
-# Install system packages for building wheels
+# Install build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gcc g++ make cmake unzip zip git python3-dev && \
-    rm -rf /var/lib/apt/lists/* && \
-    python3 -m ensurepip && python3 -m pip install --upgrade pip setuptools wheel
+    build-essential \
+    cmake \
+    unzip \
+    zip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /layer
+# Prepare Lambda layer folder structure
+WORKDIR ${LAYER_DIR}
 RUN mkdir -p python
 
-# Copy in requirements file and install
+# Copy requirements file into container
 COPY ${REQUIREMENTS} ./requirements.txt
-RUN pip install -r requirements.txt -t python/
 
-# Install lambda-trim and trim the layer
-RUN pip install lambda-trim && lambda-trim python/
+# Install Python packages to /python
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install -r requirements.txt -t python/
 
-# Fix namespace package issues (e.g., google/)
+# Install lambda-trim and use it to shrink the packages
+RUN pip install lambda-trim && \
+    lambda-trim python/
+
+# Ensure google namespace init (common for pyarrow)
 RUN touch python/google/__init__.py || true
 
-# Zip up into Lambda-compatible structure
+# Zip the contents in Lambda-compatible layout
 RUN zip -r9 /layer.zip python
 
+# Output the final zip file
 CMD cp /layer.zip /out/layer.zip
