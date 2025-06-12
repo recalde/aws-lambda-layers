@@ -43,8 +43,34 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/tests \
            python/lib/python${PYTHON_VERSION}/site-packages/**/data \
            python/lib/python${PYTHON_VERSION}/site-packages/**/datasets
 
+# Further aggressively remove unnecessary files and folders
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/*.pyd \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.so.debug \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.a \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.c \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.cpp \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.h \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.hpp \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.cmake \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.pyx \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.pxd \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.pxi \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.md \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.rst \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.txt \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.html \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.js \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.yml \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.yaml \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.ini \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.toml \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.cfg
+
+# Strip shared object files to reduce size
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} + || true
+
 # Print uncompressed size of the layer
 RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
 
-# Create ZIP for Lambda layer
-RUN cd python && zip -r9 /common-layer.zip .
+# Create ZIP for Lambda layer with maximum compression
+RUN cd python && zip -r -9 /common-layer.zip .
