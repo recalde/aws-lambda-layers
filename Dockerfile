@@ -12,8 +12,11 @@ ENV PYTHON_VERSION=3.12
 WORKDIR /layer
 RUN mkdir -p python
 
+# Accept requirements file as build argument
+ARG REQUIREMENTS=requirements.txt
+
 # Copy requirements and install
-COPY requirements.txt .
+COPY ${REQUIREMENTS} ./requirements.txt
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt -t python/
 
