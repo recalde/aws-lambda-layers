@@ -5,7 +5,10 @@ FROM public.ecr.aws/lambda/python:3.12 as builder
 ARG REQUIREMENTS=requirements.txt
 
 # Install system packages for building wheels
-RUN yum install -y gcc-c++ make cmake unzip zip git python3-devel && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc g++ make cmake unzip zip git python3-dev && \
+    rm -rf /var/lib/apt/lists/* && \
     python3 -m ensurepip && python3 -m pip install --upgrade pip setuptools wheel
 
 WORKDIR /layer
