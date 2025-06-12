@@ -7,28 +7,28 @@ This project builds three AWS Lambda layers using Docker and GitHub Actions:
 | Layer Name       | Included Packages         | Notes |
 |------------------|----------------------------|-------|
 | `pyarrow-layer`  | `pyarrow`                  | For Apache Arrow and Parquet workloads |
-| `pandas-layer`   | `pandas`, `numpy`          | For DataFrame operations and analysis |
+| `pandas-layer`   | `pandas`                   | For DataFrame operations and analysis |
 | `protobuf-layer` | `protobuf`                 | For working with protocol buffers |
-| `common-layer`   | `pandas`, `pyarrow`, `protobuf`, `googleapis-common-protos` | All-in-one, aggressively trimmed for Lambda |
+| `common-layer`   | `pandas`, `pyarrow`, `protobuf`, `googleapis-common-protos` | All-in-one layer |
 
-Each layer is zipped in a Lambda-compatible format under `python/lib/python3.12/site-packages`.
-
----
-
-## 🧹 Layer Trimming
-
-All layers are aggressively trimmed to remove tests, docs, examples, and unused submodules (especially for `pyarrow` and `pandas`). This keeps the ZIP files as small as possible for AWS Lambda deployment.
+Each layer is built using a single Dockerfile and a different requirements file, zipped in a Lambda-compatible format under `python/lib/python3.12/site-packages`.
 
 ---
 
 ## 🚀 How to Use
 
-### 🛠 Run the GitHub Action
+### 🛠 Build a Layer
 
-1. Go to the **Actions** tab in GitHub.
-2. Select the **"Build Lambda Layers"** workflow.
-3. Click **"Run workflow"** (or push to `main` branch).
-4. Wait for the job to finish and download the `.zip` files from the **Artifacts** section.
+Build a layer by specifying the requirements file as a build argument:
+
+```bash
+DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.pandas.txt -t pandas-layer .
+DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.pyarrow.txt -t pyarrow-layer .
+DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.protobuf.txt -t protobuf-layer .
+DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.common.txt -t common-layer .
+```
+
+The resulting `/layer.zip` file will be your Lambda layer.
 
 ---
 
@@ -38,22 +38,9 @@ After downloading the ZIP files:
 
 ```bash
 aws lambda publish-layer-version \
-  --layer-name pyarrow \
-  --zip-file fileb://pyarrow-layer.zip \
-  --compatible-runtimes python3.12
-
-aws lambda publish-layer-version \
-  --layer-name pandas \
-  --zip-file fileb://pandas-layer.zip \
-  --compatible-runtimes python3.12
-
-aws lambda publish-layer-version \
-  --layer-name protobuf \
-  --zip-file fileb://protobuf-layer.zip \
-  --compatible-runtimes python3.12
-
-aws lambda publish-layer-version \
-  --layer-name common \
-  --zip-file fileb://common-layer.zip \
+  --layer-name <layer-name> \
+  --zip-file fileb://layer.zip \
   --compatible-runtimes python3.12
 ```
+
+Replace `<layer-name>` with the appropriate name (e.g., `pandas`, `pyarrow`, `protobuf`, or `common`).

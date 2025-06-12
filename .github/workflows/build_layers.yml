@@ -13,9 +13,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build pyarrow
         run: |
-          docker build -t pyarrow-layer -f Dockerfile.pyarrow .
+          docker build -t pyarrow-layer --build-arg REQUIREMENTS=requirements.pyarrow.txt .
           id=$(docker create pyarrow-layer)
-          docker cp $id:/pyarrow-layer.zip pyarrow-layer.zip
+          docker cp $id:/layer.zip pyarrow-layer.zip
           docker rm $id
       - uses: actions/upload-artifact@v4
         with:
@@ -29,9 +29,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build protobuf
         run: |
-          docker build -t protobuf-layer -f Dockerfile.protobuf .
+          docker build -t protobuf-layer --build-arg REQUIREMENTS=requirements.protobuf.txt .
           id=$(docker create protobuf-layer)
-          docker cp $id:/protobuf-layer.zip protobuf-layer.zip
+          docker cp $id:/layer.zip protobuf-layer.zip
           docker rm $id
       - uses: actions/upload-artifact@v4
         with:
@@ -45,9 +45,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build pandas
         run: |
-          docker build -t pandas-layer -f Dockerfile.pandas .
+          docker build -t pandas-layer --build-arg REQUIREMENTS=requirements.pandas.txt .
           id=$(docker create pandas-layer)
-          docker cp $id:/pandas-layer.zip pandas-layer.zip
+          docker cp $id:/layer.zip pandas-layer.zip
           docker rm $id
       - uses: actions/upload-artifact@v4
         with:
@@ -61,9 +61,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build common
         run: |
-          docker build -t common-layer -f Dockerfile.common .
+          docker build -t common-layer --build-arg REQUIREMENTS=requirements.common.txt .
           id=$(docker create common-layer)
-          docker cp $id:/common-layer.zip common-layer.zip
+          docker cp $id:/layer.zip common-layer.zip
           docker rm $id
       - uses: actions/upload-artifact@v4
         with:
