@@ -1,36 +1,49 @@
-# Dockerfile
-
+# Dockerfile for AWS Lambda Layer: pyarrow
 FROM amazonlinux:2023
 
-# --- Install system dependencies with --allowerasing ---
-RUN dnf install -y --allowerasing gcc-c++ cmake make python3-devel unzip zip curl ca-certificates && \
-    update-ca-trust && \
-    dnf clean all
+# Install system dependencies
+RUN dnf install -y --allowerasing gcc-c++ cmake make python3-devel unzip zip curl ca-certificates \
+    && update-ca-trust \
+    && dnf clean all
 
-# --- Install pip safely from source to avoid RPM conflicts ---
-RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py && \
-    python3 get-pip.py && \
-    rm get-pip.py
+# Install pip from source
+RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py \
+    && python3 get-pip.py \
+    && rm get-pip.py
 
-# --- Upgrade setuptools and wheel ---
+# Upgrade setuptools and wheel
 RUN pip install --upgrade setuptools wheel
 
-# --- Lambda-compatible pyarrow layer ---
+# Set Python version
 ENV PYTHON_VERSION=3.12
 WORKDIR /opt
 
-# Install pyarrow into Python site-packages folder structure
-RUN pip install pyarrow -t python/lib/python${PYTHON_VERSION}/site-packages
+# Install pyarrow and trim unnecessary files
+RUN pip install pyarrow -t python/lib/python${PYTHON_VERSION}/site-packages \
+    && pip uninstall -y pip setuptools wheel \
+    && find python/lib/python${PYTHON_VERSION}/site-packages/ -name '*.pyc' -delete \
+    && find python/lib/python${PYTHON_VERSION}/site-packages/ -name '*.pyo' -delete
 
-# Strip shared object files to reduce size
-RUN find python/lib/python${PYTHON_VERSION}/site-packages/pyarrow -name "*.so" -exec strip --strip-unneeded {} \; || true
-
-# Clean unnecessary files
+# Aggressively remove unnecessary files and folders
 RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/tests \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/test \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/include \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/*.pyd \
            python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/*.cmake \
-           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/__pycache__
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/__pycache__ \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/doc \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/docs \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/examples \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/benchmark* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/locale \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/migrations \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/data \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/datasets \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.dist-info \
+           python/lib/python${PYTHON_VERSION}/site-packages/**/*.egg-info
+
+# Print uncompressed size of the layer
+RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
 
 # Create ZIP for Lambda layer
 RUN cd python && zip -r9 /pyarrow-layer.zip .

@@ -1,8 +1,8 @@
-# Dockerfile for AWS Lambda Layer: pandas
+# Dockerfile for AWS Lambda Layer: common (all dependencies)
 FROM amazonlinux:2023
 
 # Install system dependencies
-RUN dnf install -y --allowerasing gcc-c++ make python3-devel unzip zip curl ca-certificates \
+RUN dnf install -y --allowerasing gcc-c++ cmake make python3-devel unzip zip curl ca-certificates \
     && update-ca-trust \
     && dnf clean all
 
@@ -18,11 +18,15 @@ RUN pip install --upgrade setuptools wheel
 ENV PYTHON_VERSION=3.12
 WORKDIR /opt
 
-# Install pandas and trim unnecessary files
-RUN pip install --no-cache-dir pandas -t python/lib/python${PYTHON_VERSION}/site-packages \
+# Install all dependencies and trim unnecessary files
+RUN pip install --no-cache-dir pandas pyarrow protobuf==4.25.1 googleapis-common-protos==1.60.0 -t python/lib/python${PYTHON_VERSION}/site-packages \
     && pip uninstall -y pip setuptools wheel \
     && find python/lib/python${PYTHON_VERSION}/site-packages/ -name '*.pyc' -delete \
     && find python/lib/python${PYTHON_VERSION}/site-packages/ -name '*.pyo' -delete
+
+# Ensure google/__init__.py exists for Lambda compatibility
+RUN mkdir -p python/lib/python${PYTHON_VERSION}/site-packages/google \
+    && touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
 
 # Aggressively remove unnecessary files and folders
 RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/tests \
@@ -43,4 +47,4 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/tests \
 RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
 
 # Create ZIP for Lambda layer
-RUN cd python && zip -r9 /pandas-layer.zip .
+RUN cd python && zip -r9 /common-layer.zip .

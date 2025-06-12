@@ -53,3 +53,19 @@ jobs:
         with:
           name: pandas-layer
           path: pandas-layer.zip
+
+  build-common:
+    name: Build Common Layer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build common
+        run: |
+          docker build -t common-layer -f Dockerfile.common .
+          id=$(docker create common-layer)
+          docker cp $id:/common-layer.zip common-layer.zip
+          docker rm $id
+      - uses: actions/upload-artifact@v4
+        with:
+          name: common-layer
+          path: common-layer.zip
