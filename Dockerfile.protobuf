@@ -1,22 +1,19 @@
 FROM amazonlinux:2023
 
-# Install base tools (no conflict!)
-RUN dnf install -y unzip zip python3-pip ca-certificates && \
-    update-ca-trust && \
+RUN dnf install -y python3 python3-pip unzip zip && \
     python3 -m pip install --upgrade pip setuptools wheel
 
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
-# Install protobuf + googleapi-related packages in the correct order
+# Install protobuf and supporting packages
 RUN python3 -m pip install \
     protobuf \
     googleapis-common-protos \
-    google \
     -t python/lib/python${PYTHON_VERSION}/site-packages
 
-# Fix broken namespace: AWS Lambda needs __init__.py in google/
+# Ensure google/ becomes a proper package
 RUN touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
 
-# Create layer ZIP
+# Package into a zip layer
 RUN cd python && zip -r9 /protobuf-layer.zip .
