@@ -1,19 +1,27 @@
 FROM amazonlinux:2023
 
-# Install Python 3, pip, and zip tools
-RUN dnf install -y python3 python3-pip unzip zip
+RUN dnf install -y python3 python3-pip unzip zip tree
 
 ENV PYTHON_VERSION=3.11
 WORKDIR /opt
 
-# Install protobuf-related packages to Lambda layer directory
-RUN python3 -m pip install \
-    protobuf \
-    googleapis-common-protos \
+# Install protobuf and related packages into Lambda layer path
+RUN python3 -m pip install --no-cache-dir \
+    protobuf==4.25.1 \
+    googleapis-common-protos==1.60.0 \
     -t python/lib/python${PYTHON_VERSION}/site-packages
 
-# Fix the broken google namespace (required in Lambda)
+# Print confirmation of installed protobuf files
+RUN echo "📂 Installed files under google/protobuf:" && \
+    find python/lib/python${PYTHON_VERSION}/site-packages/google/protobuf -name "*.py"
+
+# Print full directory tree of site-packages
+RUN echo "🗂️  Full site-packages tree:" && \
+    tree python/lib/python${PYTHON_VERSION}/site-packages > /layer-structure.txt && \
+    cat /layer-structure.txt
+
+# Add __init__.py to fix namespace package issues in Lambda
 RUN touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
 
-# Package the layer
+# Create Lambda layer zip
 RUN cd python && zip -r9 /protobuf-layer.zip .
