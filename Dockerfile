@@ -25,6 +25,10 @@ COPY ${REQUIREMENTS} ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt -t python/lib/python${PYTHON_VERSION}/site-packages \
     && pip uninstall -y pip setuptools wheel
 
+# Copy and run trim.sh to reduce layer size
+COPY trim.sh /opt/trim.sh
+RUN chmod +x /opt/trim.sh && /opt/trim.sh python/lib/python${PYTHON_VERSION}/site-packages
+
 # Ensure google/__init__.py exists for Lambda compatibility (for protobuf layer)
 RUN mkdir -p python/lib/python${PYTHON_VERSION}/site-packages/google \
     && touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
