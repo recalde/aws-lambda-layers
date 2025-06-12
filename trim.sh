@@ -11,20 +11,26 @@ if [ -z "$SITE_PACKAGES" ]; then
   exit 1
 fi
 
-# Remove test, doc, and cache folders
-find "$SITE_PACKAGES" -type d \( -name tests -o -name test -o -name __pycache__ -o -name doc -o -name docs -o -name examples -o -name benchmarks -o -name data -o -name datasets \) -prune -exec rm -rf {} +
+# Remove test, doc, cache, and build folders
+find "$SITE_PACKAGES" -type d \( -name tests -o -name test -o -name __pycache__ -o -name doc -o -name docs -o -name examples -o -name benchmarks -o -name data -o -name datasets -o -name build -o -name tmp -o -name temp -o -name .pytest_cache -o -name .mypy_cache -o -name .hypothesis -o -name .tox \) -prune -exec rm -rf {} +
 
-# Remove dist-info and egg-info
-find "$SITE_PACKAGES" -type d \( -name '*.dist-info' -o -name '*.egg-info' \) -prune -exec rm -rf {} +
+# Remove dist-info, egg-info, and metadata
+find "$SITE_PACKAGES" -type d \( -name '*.dist-info' -o -name '*.egg-info' -o -name '*.pth' -o -name '*.whl' -o -name '*.metadata' \) -prune -exec rm -rf {} +
 
 # Remove source, config, and build files
-find "$SITE_PACKAGES" -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' -o -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.ini' -o -name '*.toml' -o -name '*.cfg' \) -delete
+find "$SITE_PACKAGES" -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' -o -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.ini' -o -name '*.toml' -o -name '*.cfg' -o -name '*.log' -o -name '*.bat' -o -name '*.sh' -o -name '*.ps1' -o -name '*.cmake' -o -name '*.am' -o -name '*.in' -o -name '*.m4' \) -delete
 
 # Remove large BLAS/LAPACK and unused binaries
 find "$SITE_PACKAGES" -type f \( -name 'libopenblasp*.so*' -o -name 'liblapack*.so*' -o -name 'libblas*.so*' -o -name 'libgfortran*.so*' -o -name 'libquadmath*.so*' -o -name '*.a' -o -name '*.dylib' -o -name '*.dll' \) -delete
 
-# Remove unused data files
-find "$SITE_PACKAGES" -type f \( -name '*.dat' -o -name '*.csv' -o -name '*.json' -o -name '*.pickle' -o -name '*.h5' -o -name '*.hdf5' -o -name '*.mat' -o -name '*.sav' -o -name '*.sas7bdat' -o -name '*.xpt' -o -name '*.arff' -o -name '*.pkl' -o -name '*.npz' -o -name '*.npy' \) -delete
+# Remove unused data and cache files
+find "$SITE_PACKAGES" -type f \( -name '*.dat' -o -name '*.csv' -o -name '*.json' -o -name '*.pickle' -o -name '*.h5' -o -name '*.hdf5' -o -name '*.mat' -o -name '*.sav' -o -name '*.sas7bdat' -o -name '*.xpt' -o -name '*.arff' -o -name '*.pkl' -o -name '*.npz' -o -name '*.npy' -o -name '*.gz' -o -name '*.bz2' -o -name '*.xz' -o -name '*.zip' -o -name '*.tar' \) -delete
+
+# Remove static and test binaries
+find "$SITE_PACKAGES" -type f \( -name '*.o' -o -name '*.obj' -o -name '*.exp' -o -name '*.lib' -o -name '*.pdb' \) -delete
+
+# Remove documentation, HTML, and Jupyter files
+find "$SITE_PACKAGES" -type f \( -name '*.html' -o -name '*.pdf' -o -name '*.ipynb' -o -name '*.svg' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' \) -delete
 
 # Strip shared object files
 find "$SITE_PACKAGES" -name '*.so' -exec strip --strip-unneeded {} + 2>/dev/null || true
