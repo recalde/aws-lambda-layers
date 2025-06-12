@@ -41,4 +41,13 @@ find "$SITE_PACKAGES" -type d -empty -delete
 # Strip shared object files
 find "$SITE_PACKAGES" -name '*.so' -exec strip --strip-unneeded {} + 2>/dev/null || true
 
+# Remove unused parts of pyarrow
+find "$SITE_PACKAGES/pyarrow" -type d \( -name 'tests' -o -name 'benchmark' -o -name 'benchmarks' -o -name 'cuda' -o -name 'csv' -o -name 'dataset' -o -name 'feather' -o -name 'flight' -o -name 'fs' -o -name 'gandiva' -o -name 'hdfs' -o -name 'json' -o -name 'orc' -o -name 'plasma' -o -name 'substrait' -o -name 'compute' -o -name 'parquet/encryption' \) -prune -exec rm -rf {} +
+
+# Remove unused parts of numpy
+find "$SITE_PACKAGES/numpy" -type d \( -name 'tests' -o -name 'testing' -o -name 'f2py' -o -name 'doc' -o -name 'docs' -o -name 'benchmarks' \) -prune -exec rm -rf {} +
+
+# Remove numpy .c, .h, .pyx, .pxd, .pxi, .md, .rst, .txt, .yml, .yaml, .ini, .toml, .cfg, .log, .bat, .sh, .ps1, .cmake, .am, .in, .m4, .pyc, .pyo files
+find "$SITE_PACKAGES/numpy" -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' -o -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.ini' -o -name '*.toml' -o -name '*.cfg' -o -name '*.log' -o -name '*.bat' -o -name '*.sh' -o -name '*.ps1' -o -name '*.cmake' -o -name '*.am' -o -name '*.in' -o -name '*.m4' -o -name '*.pyc' -o -name '*.pyo' \) -delete
+
 echo "Trim complete for $SITE_PACKAGES"

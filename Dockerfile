@@ -26,7 +26,8 @@ RUN pip install --no-cache-dir -r requirements.txt -t python/lib/python${PYTHON_
     && pip uninstall -y pip setuptools wheel
 
 # Move all installed files to a root python/ folder for Lambda compatibility
-RUN mv python/lib/python${PYTHON_VERSION}/site-packages python \
+RUN mkdir -p python \
+    && cp -a python/lib/python${PYTHON_VERSION}/site-packages/. python/ \
     && rm -rf python/lib
 
 # Ensure google/__init__.py exists for Lambda compatibility (for protobuf layer)
