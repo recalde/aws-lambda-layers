@@ -181,6 +181,17 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/numpy/distutils*
 # Remove pandas/io/parquet/engine.pyx and cythonized sources (not needed at runtime)
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/parquet/ -type f \( -name "*.pyx" -o -name "*.c" -o -name "*.cpp" \) -delete || true
 
+# Remove numpy/fft, numpy/linalg, numpy/random, numpy/ma, numpy/matrixlib, numpy/polynomial, numpy/testing, numpy/typing, numpy/core/include (not needed for basic DataFrame to parquet)
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/numpy/fft* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/linalg* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/random* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/ma* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/matrixlib* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/polynomial* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/testing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/typing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/numpy/core/include*
+
 # Print uncompressed size of the layer
 RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
 
