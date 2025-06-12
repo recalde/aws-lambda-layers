@@ -29,9 +29,9 @@ COPY ${REQUIREMENTS} ./requirements.txt
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt -t python/
 
-# Install lambda-trim directly from GitHub
-RUN pip install git+https://github.com/BenEgo/lambda-trim.git && \
-    lambda-trim python/
+# Clean up the layer using aws-lambda-powertools-layer-cleaner
+RUN pip install aws-lambda-powertools-layer-cleaner && \
+    lambda-layer-cleaner python/
 
 # Ensure google namespace init (common for pyarrow)
 RUN touch python/google/__init__.py || true
