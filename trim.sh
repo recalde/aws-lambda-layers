@@ -42,22 +42,31 @@ find "$SITE_PACKAGES" -type d -empty -delete
 find "$SITE_PACKAGES" -name '*.so' -exec strip --strip-unneeded {} + 2>/dev/null || true
 
 # Remove unused parts of pyarrow
-find "$SITE_PACKAGES/pyarrow" -type d \( -name 'tests' -o -name 'benchmark' -o -name 'benchmarks' -o -name 'cuda' -o -name 'csv' -o -name 'dataset' -o -name 'feather' -o -name 'flight' -o -name 'fs' -o -name 'gandiva' -o -name 'hdfs' -o -name 'json' -o -name 'orc' -o -name 'plasma' -o -name 'substrait' -o -name 'compute' -o -name 'parquet/encryption' \) -prune -exec rm -rf {} +
+if [ -d "$SITE_PACKAGES/pyarrow" ]; then
+  find "$SITE_PACKAGES/pyarrow" -type d \ 
+    ( -name 'tests' -o -name 'benchmark' -o -name 'benchmarks' -o -name 'cuda' -o -name 'csv' -o -name 'dataset' -o -name 'feather' -o -name 'flight' -o -name 'fs' -o -name 'gandiva' -o -name 'hdfs' -o -name 'json' -o -name 'orc' -o -name 'plasma' -o -name 'substrait' -o -name 'compute' -o -name 'parquet/encryption' ) -prune -exec rm -rf {} +
+fi
 
 # Remove unused parts of numpy
-find "$SITE_PACKAGES/numpy" -type d \( -name 'tests' -o -name 'testing' -o -name 'f2py' -o -name 'doc' -o -name 'docs' -o -name 'benchmarks' \) -prune -exec rm -rf {} +
+if [ -d "$SITE_PACKAGES/numpy" ]; then
+  find "$SITE_PACKAGES/numpy" -type d \ 
+    ( -name 'tests' -o -name 'testing' -o -name 'f2py' -o -name 'doc' -o -name 'docs' -o -name 'benchmarks' ) -prune -exec rm -rf {} +
 
-# Remove numpy .c, .h, .pyx, .pxd, .pxi, .md, .rst, .txt, .yml, .yaml, .ini, .toml, .cfg, .log, .bat, .sh, .ps1, .cmake, .am, .in, .m4, .pyc, .pyo files
-find "$SITE_PACKAGES/numpy" -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' -o -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.ini' -o -name '*.toml' -o -name '*.cfg' -o -name '*.log' -o -name '*.bat' -o -name '*.sh' -o -name '*.ps1' -o -name '*.cmake' -o -name '*.am' -o -name '*.in' -o -name '*.m4' -o -name '*.pyc' -o -name '*.pyo' \) -delete
+  # Remove numpy .c, .h, .pyx, .pxd, .pxi, .md, .rst, .txt, .yml, .yaml, .ini, .toml, .cfg, .log, .bat, .sh, .ps1, .cmake, .am, .in, .m4, .pyc, .pyo files
+  find "$SITE_PACKAGES/numpy" -type f \ 
+    ( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' -o -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.ini' -o -name '*.toml' -o -name '*.cfg' -o -name '*.log' -o -name '*.bat' -o -name '*.sh' -o -name '*.ps1' -o -name '*.cmake' -o -name '*.am' -o -name '*.in' -o -name '*.m4' -o -name '*.pyc' -o -name '*.pyo' ) -delete
+fi
 
 # Remove unused parts of pandas (plotting, tests, io, and more)
-find "$SITE_PACKAGES/pandas" -type d \
-    \( -name 'tests' -o -name 'testing' -o -name 'plotting' -o -name 'io' -o -name 'formats' -o -name 'compat' -o -name 'tseries' -o -name 'core/arrays' -o -name 'core/reshape' -o -name 'core/algorithms' -o -name 'core/computation' -o -name 'core/groupby' -o -name 'core/window' -o -name 'core/ops' -o -name 'core/dtypes' -o -name 'core/indexes' -o -name 'core/internals' -o -name 'core/sparse' -o -name 'core/tools' -o -name 'core/util' \) \
+if [ -d "$SITE_PACKAGES/pandas" ]; then
+  find "$SITE_PACKAGES/pandas" -type d \
+    ( -name 'tests' -o -name 'testing' -o -name 'plotting' -o -name 'io' -o -name 'formats' -o -name 'compat' -o -name 'tseries' -o -name 'core/arrays' -o -name 'core/reshape' -o -name 'core/algorithms' -o -name 'core/computation' -o -name 'core/groupby' -o -name 'core/window' -o -name 'core/ops' -o -name 'core/dtypes' -o -name 'core/indexes' -o -name 'core/internals' -o -name 'core/sparse' -o -name 'core/tools' -o -name 'core/util' ) \
     -prune -exec rm -rf {} +
 
-# Remove pandas doc files
-find "$SITE_PACKAGES/pandas" -type f \
-    \( -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.csv' -o -name '*.json' -o -name '*.html' -o -name '*.png' -o -name '*.svg' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' \) -delete
+  # Remove pandas doc files
+  find "$SITE_PACKAGES/pandas" -type f \
+    ( -name '*.md' -o -name '*.rst' -o -name '*.txt' -o -name '*.csv' -o -name '*.json' -o -name '*.html' -o -name '*.png' -o -name '*.svg' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' ) -delete
+fi
 
 # Suggestion: Remove locale and timezone data if not needed
 find "$SITE_PACKAGES" -type d \( -name 'locale' -o -name 'tzdata' -o -name 'zoneinfo' \) -prune -exec rm -rf {} +
