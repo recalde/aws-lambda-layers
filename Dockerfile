@@ -25,16 +25,14 @@ COPY ${REQUIREMENTS} ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt -t python/lib/python${PYTHON_VERSION}/site-packages \
     && pip uninstall -y pip setuptools wheel
 
-# Copy and run trim.sh to reduce layer size
-COPY trim.sh /opt/trim.sh
-RUN chmod +x /opt/trim.sh && /opt/trim.sh python/lib/python${PYTHON_VERSION}/site-packages
+# Move all installed files to a root python/ folder for Lambda compatibility
+RUN mkdir -p python && cp -a python/lib/python${PYTHON_VERSION}/site-packages/. python/
 
 # Ensure google/__init__.py exists for Lambda compatibility (for protobuf layer)
-RUN mkdir -p python/lib/python${PYTHON_VERSION}/site-packages/google \
-    && touch python/lib/python${PYTHON_VERSION}/site-packages/google/__init__.py
+RUN mkdir -p python/google && touch python/google/__init__.py
 
 # Print uncompressed size of the layer
-RUN du -sh python/lib/python${PYTHON_VERSION}/site-packages
+RUN du -sh python
 
 # Create ZIP for Lambda layer with maximum compression
-RUN cd python && zip -r -9 /layer.zip .
+RUN zip -r -9 /layer.zip python
