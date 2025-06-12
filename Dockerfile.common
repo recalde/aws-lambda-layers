@@ -66,6 +66,65 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/**/*.pyd \
            python/lib/python${PYTHON_VERSION}/site-packages/**/*.toml \
            python/lib/python${PYTHON_VERSION}/site-packages/**/*.cfg
 
+# Remove pyarrow submodules not needed for parquet
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/flight* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/gandiva* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/hdfs* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/hotspot* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/orc* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/plasma* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/compute* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/cuda* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/serialization* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_cuda* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_flight* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_gandiva* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_hdfs* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_orc* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_plasma* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_s3fs* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_substrait* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_dataset* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_json* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_fs* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_acero* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_compute* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_substrait* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_dataset* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_json* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_fs* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pyarrow/_acero*
+
+# Remove pandas submodules not needed for writing DataFrame to parquet
+RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pandas/tests \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/clipboard* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/excel* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/feather* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/gbq* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/html* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/join* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/orc* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/sas* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/spss* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/sql* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/stata* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/io/xml* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/plotting \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/arrays \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/plotting* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_testing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_version* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/conftest* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/tests* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/util/_tester* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/util/testing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/tests* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_typing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_config* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_libs/tslibs/tests* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_libs/testing* \
+           python/lib/python${PYTHON_VERSION}/site-packages/pandas/_libs/tslibs/testing*
+
 # Strip shared object files to reduce size
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} + || true
 

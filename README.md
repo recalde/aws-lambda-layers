@@ -9,8 +9,15 @@ This project builds three AWS Lambda layers using Docker and GitHub Actions:
 | `pyarrow-layer`  | `pyarrow`                  | For Apache Arrow and Parquet workloads |
 | `pandas-layer`   | `pandas`, `numpy`          | For DataFrame operations and analysis |
 | `protobuf-layer` | `protobuf`                 | For working with protocol buffers |
+| `common-layer`   | `pandas`, `pyarrow`, `protobuf`, `googleapis-common-protos` | All-in-one, aggressively trimmed for Lambda |
 
-Each layer is zipped in a Lambda-compatible format under `python/lib/python3.11/site-packages`.
+Each layer is zipped in a Lambda-compatible format under `python/lib/python3.12/site-packages`.
+
+---
+
+## 🧹 Layer Trimming
+
+All layers are aggressively trimmed to remove tests, docs, examples, and unused submodules (especially for `pyarrow` and `pandas`). This keeps the ZIP files as small as possible for AWS Lambda deployment.
 
 ---
 
@@ -33,14 +40,20 @@ After downloading the ZIP files:
 aws lambda publish-layer-version \
   --layer-name pyarrow \
   --zip-file fileb://pyarrow-layer.zip \
-  --compatible-runtimes python3.11
+  --compatible-runtimes python3.12
 
 aws lambda publish-layer-version \
   --layer-name pandas \
   --zip-file fileb://pandas-layer.zip \
-  --compatible-runtimes python3.11
+  --compatible-runtimes python3.12
 
 aws lambda publish-layer-version \
   --layer-name protobuf \
   --zip-file fileb://protobuf-layer.zip \
-  --compatible-runtimes python3.11
+  --compatible-runtimes python3.12
+
+aws lambda publish-layer-version \
+  --layer-name common \
+  --zip-file fileb://common-layer.zip \
+  --compatible-runtimes python3.12
+```
