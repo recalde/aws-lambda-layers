@@ -162,6 +162,10 @@ RUN rm -rf python/lib/python${PYTHON_VERSION}/site-packages/pytz* \
 # Remove large numpy BLAS/LAPACK shared libraries not needed for basic parquet writing
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "libscipy_openblas64_*.so" -delete
 
+# Remove additional large BLAS/LAPACK and unused binary/data files
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -type f \( -name "libopenblasp*.so*" -o -name "liblapack*.so*" -o -name "libblas*.so*" -o -name "libgfortran*.so*" -o -name "libquadmath*.so*" -o -name "*.a" -o -name "*.dylib" -o -name "*.dll" \) -delete
+RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -type f \( -name "*.dat" -o -name "*.csv" -o -name "*.json" -o -name "*.pickle" -o -name "*.h5" -o -name "*.hdf5" -o -name "*.mat" -o -name "*.sav" -o -name "*.sas7bdat" -o -name "*.xpt" -o -name "*.arff" -o -name "*.pkl" -o -name "*.npz" -o -name "*.npy" \) -delete
+
 # Strip shared object files to reduce size
 RUN find python/lib/python${PYTHON_VERSION}/site-packages/ -name "*.so" -exec strip --strip-unneeded {} + || true
 
