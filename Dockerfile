@@ -29,8 +29,8 @@ COPY ${REQUIREMENTS} ./requirements.txt
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt -t python/
 
-# Install lambda-trim and use it to shrink the packages
-RUN pip install lambda-trim && \
+# Install lambda-trim directly from GitHub
+RUN pip install git+https://github.com/BenEgo/lambda-trim.git && \
     lambda-trim python/
 
 # Ensure google namespace init (common for pyarrow)
