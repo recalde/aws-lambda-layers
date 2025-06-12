@@ -10,7 +10,7 @@ RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py && \
 
 RUN pip install --upgrade setuptools wheel
 
-ENV PYTHON_VERSION=3.11
+ENV PYTHON_VERSION=3.12
 WORKDIR /opt
 
 RUN pip install --no-cache-dir pandas -t python/lib/python${PYTHON_VERSION}/site-packages
