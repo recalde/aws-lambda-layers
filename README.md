@@ -28,7 +28,17 @@ DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.protobuf.tx
 DOCKER_BUILDKIT=1 docker build --build-arg REQUIREMENTS=requirements.common.txt -t common-layer .
 ```
 
-The resulting `/layer.zip` file will be your Lambda layer.
+The resulting `/layer.zip` file is created inside the Docker container. To extract it locally, run:
+
+```bash
+docker create --name temp-layer <image-name>
+docker cp temp-layer:/layer.zip ./layer.zip
+docker rm temp-layer
+```
+
+Replace `<image-name>` with the tag you used above (e.g., `pandas-layer`).
+
+Alternatively, use the provided GitHub Actions workflow (`.github/workflows/build_layers.yml`) to automate building and uploading the layer zip files as artifacts.
 
 ---
 

@@ -1,44 +1,28 @@
-# Dockerfile for AWS Lambda Layer: generic (ARG-based requirements)
-FROM amazonlinux:2023
+FROM public.ecr.aws/lambda/python:3.12 as builder
 
-ARG REQUIREMENTS=requirements.txt
+# Install build dependencies
+RUN yum install -y gcc-c++ make cmake unzip zip python3-devel git
 
-# Install system dependencies
-RUN dnf install -y --allowerasing gcc-c++ cmake make python3-devel unzip zip curl ca-certificates \
-    && update-ca-trust \
-    && dnf clean all
+# Install pip tools
+RUN python3 -m ensurepip && \
+    python3 -m pip install --upgrade pip setuptools wheel
 
-# Install pip from source
-RUN curl -sSLO https://bootstrap.pypa.io/get-pip.py \
-    && python3 get-pip.py \
-    && rm get-pip.py
-
-# Upgrade setuptools and wheel
-RUN pip install --upgrade setuptools wheel
-
-# Set Python version
+# Layer directory layout
 ENV PYTHON_VERSION=3.12
-WORKDIR /opt
+WORKDIR /layer
+RUN mkdir -p python
 
-# Copy requirements file and install dependencies
-COPY ${REQUIREMENTS} ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt -t python/lib/python${PYTHON_VERSION}/site-packages \
-    && pip uninstall -y pip setuptools wheel
+# Copy requirements and install
+COPY requirements.txt .
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r requirements.txt -t python/
 
-# Move all installed files to a root python/ folder for Lambda compatibility
-RUN mkdir -p python \
-    && cp -a python/lib/python${PYTHON_VERSION}/site-packages/. python/ \
-    && rm -rf python/lib
+# Install lambda-trim
+RUN python3 -m pip install lambda-trim && \
+    lambda-trim python/
 
-# Ensure google/__init__.py exists for Lambda compatibility (for protobuf layer)
-RUN mkdir -p python/google && touch python/google/__init__.py
+# Fix google namespace if needed
+RUN touch python/google/__init__.py || true
 
-# Copy and run trim.sh to reduce layer size
-COPY trim.sh ./trim.sh
-RUN chmod +x ./trim.sh && ./trim.sh python
-
-# Print uncompressed size of the layer
-RUN du -sh python
-
-# Create ZIP for Lambda layer with maximum compression
-RUN zip -r -9 /layer.zip python
+# Zip it up properly
+RUN zip -r9 /layer.zip python
